@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>XAUUSD Stop Loss Calculator</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f5f5f7;--card:#fff;--text:#1d1d1f;--muted:#6e6e73;--border:#d9d9de;--accent:#d62828;--gold:#b8860b;--green:#1a8f3c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111214;--card:#1b1c1f;--text:#f2f2f4;--muted:#9a9aa2;--border:#34353a;--accent:#ff5a5a;--gold:#e6b422;--green:#3ddc84}}
+:root[data-theme="dark"]{--bg:#111214;--card:#1b1c1f;--text:#f2f2f4;--muted:#9a9aa2;--border:#34353a;--accent:#ff5a5a;--gold:#e6b422;--green:#3ddc84}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:20px 16px}
+.wrap{max-width:440px;margin:0 auto}
+h1{font-size:20px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
+label{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px}
+label:first-child{margin-top:0}
+input{width:100%;font-size:18px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text)}
+input:focus{outline:2px solid var(--gold);border-color:transparent}
+.loss{text-align:center}
+.loss .big{font-size:36px;font-weight:700;color:var(--accent);margin:4px 0}
+.loss .lbl{font-size:13px;color:var(--muted)}
+.row{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border);font-size:14px}
+.row:first-of-type{border-top:none}
+.row span:first-child{color:var(--muted)}
+.note{font-size:12px;color:var(--muted);line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>XAUUSD Stop Loss Calculator</h1>
+  <div class="sub">Buy trade: how much you lose if price falls by your stop loss %</div>
+
+  <div class="card">
+    <label for="entry">Entry price ($)</label>
+    <input id="entry" type="number" inputmode="decimal" step="any" placeholder="e.g. 4000" value="4000">
+    <label for="lot">Lot size</label>
+    <input id="lot" type="number" inputmode="decimal" step="any" placeholder="e.g. 0.01" value="0.01">
+    <label for="sl">Stop loss (% fall)</label>
+    <input id="sl" type="number" inputmode="decimal" step="any" placeholder="e.g. 10" value="10">
+    <label for="up">If market moves up (% rise)</label>
+    <input id="up" type="number" inputmode="decimal" step="any" placeholder="e.g. 10" value="10">
+  </div>
+
+  <div class="card loss">
+    <div class="lbl">Loss if price falls by stop loss %</div>
+    <div class="big" id="loss">$0.00</div>
+  </div>
+
+  <div class="card loss">
+    <div class="lbl">Profit if price rises by upside %</div>
+    <div class="big" id="profit" style="color:var(--green)">$0.00</div>
+  </div>
+
+  <div class="card">
+    <div class="row"><span>Stop loss price</span><b id="slPrice">-</b></div>
+    <div class="row"><span>Price fall per ounce</span><b id="dist">-</b></div>
+    <div class="row"><span>Upside target price</span><b id="upPrice">-</b></div>
+    <div class="row"><span>Price rise per ounce</span><b id="upDist">-</b></div>
+    <div class="row"><span>Ounces in position</span><b id="oz">-</b></div>
+    <div class="row"><span>Loss per 1% fall</span><b id="per1">-</b></div>
+  </div>
+
+  <div class="note">Uses 1 lot = 100 oz (standard XAUUSD contract), so 0.01 lot = 1 oz. Excludes spread, swap and commission. Check your broker's contract size.</div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const fmt=n=>"$"+n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+function calc(){
+  const e=parseFloat($("entry").value),l=parseFloat($("lot").value),s=parseFloat($("sl").value),u=parseFloat($("up").value);
+  if(!(e>0)||!(l>0)||!(s>=0)||!(u>=0)){["loss","profit","slPrice","dist","upPrice","upDist","oz","per1"].forEach(i=>$(i).textContent="-");return}
+  const oz=l*100,dist=e*s/100,loss=dist*oz,upDist=e*u/100,profit=upDist*oz;
+  $("loss").textContent=fmt(loss);
+  $("profit").textContent=fmt(profit);
+  $("upPrice").textContent=fmt(e+upDist);
+  $("upDist").textContent=fmt(upDist);
+  $("slPrice").textContent=fmt(e-dist);
+  $("dist").textContent=fmt(dist);
+  $("oz").textContent=oz.toLocaleString(undefined,{maximumFractionDigits:4})+" oz";
+  $("per1").textContent=fmt(e*0.01*oz);
+}
+["entry","lot","sl","up"].forEach(i=>$(i).addEventListener("input",calc));
+calc();
+</script>
+</body>
+</html>
